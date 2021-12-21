@@ -1,0 +1,77 @@
+name: Build and Push
+
+on:
+  workflow_dispatch:
+    inputs:
+      force-rebuild:
+        description: 'Force rebuild'
+        required: false
+        default: 'false'
+      specified-tag:
+        description: 'The tag of polyfill-service to build'
+        required: false
+        default: ''
+  schedule:
+    - cron: '0 0 * * *'
+
+env:
+  DOCKER_IMAGE_NAME: menci/polyfill-service
+  SOURCE_REPO: Financial-Times/polyfill-service
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build and Push
+    steps:
+    - name: Check latest release
+      id: check
+      run: |
+        if [[ "$SPECIFIED_TAG" != "" ]]; then
+            BUILD_TAG="$SPECIFIED_TAG"
+        else
+            BUILD_TAG="$(curl "https://api.github.com/repos/$SOURCE_REPO/releases/latest" | jq -r .tag_name)"
+        fi
+
+        if [[ "$FORCE_REBUILD" == "true" ]]; then
+            SKIP="false"
+        else
+            if curl -fL "https://hub.docker.com/v2/repositories/$DOCKER_IMAGE_NAME/tags/$BUILD_TAG" &> /dev/null; then
+                SKIP="true"
+            else
+                SKIP="false"
+            fi
+        fi
+
+        echo "::set-output name=ref::$BUILD_TAG"
+        echo "::set-output name=skip::$SKIP"
+      env:
+        FORCE_REBUILD: ${{ github.event.inputs.force-rebuild }}
+        SPECIFIED_TAG: ${{ github.event.inputs.specified-tag }}
+    - name: Checkout
+      if: ${{ steps.check.outputs.skip == 'false' }}
+      uses: actions/checkout@v2
+    - name: Checkout polyfill-service
+      if: ${{ steps.check.outputs.skip == 'false' }}
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ env.SOURCE_REPO }}
+        ref: ${{ steps.check.outputs.ref }}
+        path: polyfill-service
+    - name: Set up Docker Buildx
+      if: ${{ steps.check.outputs.skip == 'false' }}
+      uses: docker/setup-buildx-action@v1
+    - name: Login to DockerHub
+      if: ${{ steps.check.outputs.skip == 'false' }}
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and Push
+      if: ${{ steps.check.outputs.skip == 'false' }}
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.check.outputs.ref }}
+          ${{ env.DOCKER_IMAGE_NAME }}:latest

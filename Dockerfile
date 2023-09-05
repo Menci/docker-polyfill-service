@@ -8,6 +8,7 @@ COPY polyfill-service /polyfill-service
 WORKDIR /polyfill-service
 
 # Install dependencies
+RUN npm install
 RUN npm ci --production
 
 ENV NODE_ENV=production \

@@ -49,10 +49,10 @@ jobs:
         SPECIFIED_TAG: ${{ github.event.inputs.specified-tag }}
     - name: Checkout
       if: ${{ steps.check.outputs.skip == 'false' }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Checkout polyfill-service
       if: ${{ steps.check.outputs.skip == 'false' }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: ${{ env.SOURCE_REPO }}
         ref: ${{ steps.check.outputs.ref }}

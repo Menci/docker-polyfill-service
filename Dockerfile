@@ -1,7 +1,7 @@
-# Use node 12 and npm 7
-FROM node:12-alpine
+# Use node 18 and npm 9
+FROM node:18-alpine
 RUN apk add bash && \
-    npm install -g npm@7
+    npm install -g npm@9
     
 # Copy polyfill-service files
 COPY polyfill-service /polyfill-service

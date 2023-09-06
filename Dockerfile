@@ -1,5 +1,5 @@
-# Use node 18 and npm 9
-FROM node:18-alpine
+# Use node 16 and npm 8
+FROM node:16-alpine
 RUN apk add bash && \
     npm install -g npm@9
     

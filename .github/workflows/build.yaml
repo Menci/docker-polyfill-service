@@ -15,7 +15,7 @@ on:
     - cron: '0 0 * * *'
 
 env:
-  DOCKER_IMAGE_NAME: menci/polyfill-service
+  DOCKER_IMAGE_NAME: hao0o0/polyfill-service
   SOURCE_REPO: JakeChampion/polyfill-service
 
 jobs:

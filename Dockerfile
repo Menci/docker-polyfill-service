@@ -9,7 +9,7 @@ WORKDIR /polyfill-service
 
 # Install dependencies
 #RUN npm ci --production
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 ENV NODE_ENV=production \
     PORT=80

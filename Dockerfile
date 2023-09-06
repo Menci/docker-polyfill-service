@@ -1,7 +1,7 @@
 # Use node 16 and npm 8
 FROM node:16-alpine
 RUN apk add bash && \
-    npm install -g npm@9
+    npm install -g npm@8
     
 # Copy polyfill-service files
 COPY polyfill-service /polyfill-service

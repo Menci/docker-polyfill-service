@@ -1,19 +1,21 @@
-# Use node 16 and npm 8
 FROM node:16-alpine
-RUN apk add bash && \
-    npm install -g npm@8
-    
-# Copy polyfill-service files
+
+RUN apk add --no-cache --update bash
+RUN apk add --no-cache --update --virtual build git python3 make gcc g++
 COPY polyfill-service /polyfill-service
 WORKDIR /polyfill-service
 
-# Install dependencies
-#RUN npm ci --production
-RUN npm install --legacy-peer-deps
+ARG NODE_ENV='production'
+ENV PORT 80
 
-ENV NODE_ENV=production \
-    PORT=80
-EXPOSE 80
+RUN npm install -g patch-package
+RUN npm ci --no-audit
 
-ENTRYPOINT ["npm", "run"]
-CMD ["start"]
+RUN sed -i.bak -e 's,^node,exec node,' start_server.sh && \
+        mv start_server.sh /bin/ && \
+        chmod a+x /bin/start_server.sh && \
+        apk del build
+
+EXPOSE ${PORT}
+
+CMD ["/bin/start_server.sh", "server/index.js"]
